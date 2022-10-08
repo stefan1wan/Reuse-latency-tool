@@ -4,7 +4,6 @@ pub mod rl{
     use std::time::Instant;
     use std::io::{self, BufRead};
     use std::path::Path;
-    // use array_tool::vec::Uniq;
 
     fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
@@ -14,25 +13,23 @@ pub mod rl{
 
     pub fn read_file_text(filename: &str) -> Vec<u64>{
         println!("In txt file {}", filename);
-
-
-        let lines = read_lines(filename)
-            .expect("Something went wrong reading the file");
-
         let mut pid_list: Vec<u32> = vec![];
         let mut pc_list: Vec<u64> = vec![];
-        
-        
-        for line in lines {
-            if let Ok(ip) = line {
-                println!("{}", ip);
-            }      
-        }  
 
-        pid_list.push(1);
-        pc_list.push(1);
-
-        // println!("With text:\n{:#?}", lines);
+        if let Ok(lines) = read_lines(filename){
+            for line in lines {
+                if let Ok(info) = line {
+                    println!("{}", info);
+                    let split: Vec<_> = info.split_whitespace().collect();
+                    
+                    let pid: u32 = split[0].parse().unwrap();
+                    let pc: u64 = u64::from_str_radix(split[1], 16).unwrap();
+                    
+                    pid_list.push(pid);
+                    pc_list.push(pc);
+                }      
+            }  
+        }
         pc_list
     }
 
