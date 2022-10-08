@@ -31,6 +31,18 @@ print(RL)
 
 ## Input and Output
 
+input format
+```
+83910 ffffffffa4e96106  2  66 90
+83910 ffffffffa4e96108  1  c3
+83910 ffffffffa4e1b854  2  66 90
+83910 ffffffffa4e1b856  7  4c 89 a3 60 01 00 00
+83910 ffffffffa4e1b85d  1  5b
+83910 ffffffffa4e1b85e  2  41 5c
+83910 ffffffffa4e1b860  1  5d
+83910 ffffffffa4e1b861  1  c3
+83910 ffffffffa4e1c68d  4  48 83 c4 20
+```
 ## Usage
 ```
 ./rl_tool pc.data
