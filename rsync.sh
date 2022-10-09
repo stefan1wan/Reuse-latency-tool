@@ -1,2 +1,3 @@
 #!/bin/bash
-rsync -avz  ./ ic:/home/wan/rsuse-latency-tool
+rm *.data
+rsync -avz  --exclude "target"  ./ ic-remote:/home/wan/rsuse-latency-tool

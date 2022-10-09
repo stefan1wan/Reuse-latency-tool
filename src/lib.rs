@@ -40,14 +40,10 @@ pub mod rl{
         pc_list
     }
 
-    pub fn write_to_binary(pc_list:&Vec<u64>, filename: &str){
-        let mut file = File::create(filename).unwrap();
-        // Write a slice of bytes to the file
-        // file.write_all(&pc_list);
-        // file.write_all_vectored(&pc_list);
-        for pc in pc_list{
-            file.write(&pc.to_le_bytes()).ok(); // *pc, 8);
-        }
+    pub fn read_file_text_multi_thread(filename: &str, core_num:i32) -> Vec<u64>{
+        let mut pc_list: Vec<u64> = vec![];
+        //TODO: implement according to cores;
+        pc_list
     }
 
     pub fn read_from_binary(filename: &str) -> Vec<u64>{
@@ -70,7 +66,16 @@ pub mod rl{
         
         pc_list
     }
-    
+
+
+    pub fn write_to_binary(pc_list:&Vec<u64>, filename: &str){
+        let mut file = File::create(filename).unwrap();
+        for pc in pc_list{
+            file.write(&pc.to_le_bytes()).ok(); // *pc, 8);
+        }
+    }
+
+
 
     use std::collections::HashSet;
     fn rl_uniq(i:usize, j:usize, pc_list:&Vec<u64>) -> u64{
@@ -81,14 +86,16 @@ pub mod rl{
         map.len().try_into().unwrap()
     }
 
-
+    const max_working_set:u64 = 30000000;
+    use std::cmp::{max, min};
     pub fn rl(pc_list: &Vec<u64>) -> Vec<u64>{
         // println!("PC list:\n{:#?}", pc_list);
         let mut rl_list: Vec<u64> = vec![];
 
+        let mut my_count:u64 = 0;
         for i in 0..pc_list.len(){
             let mut flag:bool = false;
-            for j in i+1..pc_list.len(){
+            for j in i+1..min(pc_list.len(), max_working_set.try_into().unwrap()){
                 if pc_list[i] == pc_list[j]{
                     // println!("{}:{}", i, j);
                     let reuse_distance = rl_uniq(i+1, j, &pc_list);
@@ -100,10 +107,27 @@ pub mod rl{
             if !flag{
                 rl_list.push(pc_list.len().try_into().unwrap());
             }
-
+            my_count=my_count+1;
+            if(my_count%10000==0){
+                println!("count: {}", my_count);
+            }
         }
         // println!("Reuse Distance list:\n{:#?}", rl_list);
         rl_list
+    }
+
+    use std::collections::HashMap;
+    pub fn rl_bins(rl_list: &Vec<u64>, filename: &str){
+        let mut map:HashMap<u64, i32> = HashMap::new();
+        for i in 0..rl_list.len(){
+            let mut count = map.entry(rl_list[i]).or_insert(0);
+            *count += 1;
+        }
+        let mut file = File::create(filename).unwrap();
+        for (rl, count) in &map{
+            file.write(&rl.to_le_bytes()).ok(); 
+            file.write(&count.to_le_bytes()).ok();
+        }
     }
 
 }

@@ -27,7 +27,10 @@ print(RL)
 # Use rust to implement the algorithm; left the rest to python;
 ```
 
-### 
+### Optimizes
+(1) [Todo]Multi-thread in the pre-parse phase
+(2) [Done]Set search limits, the instrustion working set is (), lets assume 100K instructions at max for one core. 100KB = 100*1024/3.5 = 29959314 ≈ 30M instructions;
+(3)
 
 ## Input and Output
 
