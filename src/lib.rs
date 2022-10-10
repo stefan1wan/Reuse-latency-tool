@@ -6,6 +6,7 @@ pub mod rl{
     use std::time::Instant;
     use std::path::Path;
 
+    const DEBUG:bool=false;
     fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
         let file = File::open(filename)?;
@@ -32,7 +33,7 @@ pub mod rl{
                     pc_list.push(pc);
                 }
                 my_count=my_count+1;
-                if(my_count%10000000==0){
+                if my_count%10000000==0{
                     println!("count: {}", my_count);
                 }
             }  
@@ -75,8 +76,6 @@ pub mod rl{
         }
     }
 
-
-
     use std::collections::HashSet;
     fn rl_uniq(i:usize, j:usize, pc_list:&Vec<u64>) -> u64{
         let mut map = HashSet::new();
@@ -86,8 +85,9 @@ pub mod rl{
         map.len().try_into().unwrap()
     }
 
-    const max_working_set:u64 = 30000000;
+    const MAX_WORKING_SET:u64 = 30000000;
     use std::cmp::{max, min};
+    use itertools::Itertools;
     pub fn rl(pc_list: &Vec<u64>) -> Vec<u64>{
         // println!("PC list:\n{:#?}", pc_list);
         let mut rl_list: Vec<u64> = vec![];
@@ -95,20 +95,27 @@ pub mod rl{
         let mut my_count:u64 = 0;
         for i in 0..pc_list.len(){
             let mut flag:bool = false;
-            for j in i+1..min(pc_list.len(), max_working_set.try_into().unwrap()){
+            for j in i+1..min(pc_list.len(), MAX_WORKING_SET.try_into().unwrap()){
                 if pc_list[i] == pc_list[j]{
                     // println!("{}:{}", i, j);
-                    let reuse_distance = rl_uniq(i+1, j, &pc_list);
+                    let reuse_distance:u64 = pc_list[i+1..j].iter().cloned().unique().collect_vec().len().try_into().unwrap();//rl_uniq(i+1, j, &pc_list);
                     rl_list.push(reuse_distance);
                     flag=true;
+                    if DEBUG{
+                        println!("Resuse latency found: {}", reuse_distance);
+                    }
+                    
                     break;
                 }
             }
             if !flag{
                 rl_list.push(pc_list.len().try_into().unwrap());
+                if DEBUG{
+                    println!("Resuse latency not found!");
+                }
             }
             my_count=my_count+1;
-            if(my_count%10000==0){
+            if my_count%10000==0 {
                 println!("count: {}", my_count);
             }
         }
@@ -120,7 +127,7 @@ pub mod rl{
     pub fn rl_bins(rl_list: &Vec<u64>, filename: &str){
         let mut map:HashMap<u64, i32> = HashMap::new();
         for i in 0..rl_list.len(){
-            let mut count = map.entry(rl_list[i]).or_insert(0);
+            let count = map.entry(rl_list[i]).or_insert(0);
             *count += 1;
         }
         let mut file = File::create(filename).unwrap();
