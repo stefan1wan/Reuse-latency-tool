@@ -19,7 +19,8 @@ fn main() {
 
     // (2) Read binary and calculate 
     let pc_list = rl::read_from_binary(bin_name);
-    let rl_list = rl::rl(&pc_list);
+    let rl_list = rl::rl_improved(&pc_list);
+    // let rl_list = rl::rl(&pc_list);
     rl::write_to_binary(&rl_list, out_name);
     println!("generate rl list done");
     // (3) Parse reuse latency to bins

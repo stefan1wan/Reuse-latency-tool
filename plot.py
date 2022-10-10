@@ -10,9 +10,10 @@ with open("bins.data", "rb") as f:
         if not rl:
             break;
         rl_u64 = struct.unpack("L",rl)[0]
-        count = f.read(4)
-        count_i32 = struct.unpack("I", count)[0]
-        dic[rl_u64] = count_i32
+        count = f.read(8)
+        count_u64 = struct.unpack("L", count)[0]
+        dic[rl_u64] = count_u64
+        assert(count_u64<0xffffffffffff)
     f.close()
 
 print(dic)
