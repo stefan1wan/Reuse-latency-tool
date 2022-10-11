@@ -1,8 +1,8 @@
 # Intro
-This is a tool in rust to analyze the reuse latency of a set of PCs.
-Let's assume that sequence is a,b,c,d,a,a,b,c,e.......
-For the first a, there is b,c,d between the next appearence. so the reuse latency is unique([b,c,d]) = 3. We don't count the repetitive PCs. We denote it as RL[0] = (a, 3).
-Similairy,  RL[1]=(b, 3), RL[2]=(c, 3), RL[3] = (d, ∞), RL[4] = (a, 0) and so on. For `d`, there is no resusage, so we use ∞ to represent it.
+This is a tool in rust to analyze the reuse latency(RL) of a set of PCs.
+Let's assume that sequence is `a,b,c,d,a,a,b,c,e.......`
+For the first a, there is b,c,d between the next appearence. so the reuse latency is `unique([b,c,d]) = 3`. We don't count the repetitive PCs. We denote it as `RL[0] = (a, 3)`.
+Similairy,  `RL[1]=(b, 3), RL[2]=(c, 3), RL[3] = (d, ∞), RL[4] = (a, 0)` and so on. For `d`, there is no resusage, so we use ∞ to represent it.
 The resue latency is useful to analyze instruction working sets later.
 
 ## Algorithm
@@ -13,9 +13,6 @@ We use two `for` loops to do this work:
 S = [1,2,3,4,1,1,2,3,5]
 RL = []
 L = len(PC)
-def RL_uniq(i, j):
-    printf("TODO: implement")
-    return 1
 
 for i in range(L):
     for j in range(i+1, L):
@@ -27,10 +24,10 @@ print(RL)
 ```
 
 ### Optimization
+Use a hashmap to record all the PCs and its indexes. Then we just need to traverse the log once. We will also maintain some states to speedup RL calculation for basic bolcks. For details please see the code.
 
 
 ## File format
-
 
 ### "pc.txt": txt file
 The file pc.txt is a dummy file for tests

@@ -16,6 +16,7 @@ fn main() {
     let bin_name = "pc.data";
     let out_name="rl.data";
     let bins_name = "bins.data";
+
     // (1) Parse and generate binary
     let pc_list = rl::parse_txt_file(txt_name);
     println!("parse {} done\n", txt_name);
@@ -28,6 +29,7 @@ fn main() {
     // let rl_list = rl::rl(&pc_list);
     rl::write_to_binary(&rl_list, out_name);
     println!("generate {} done.\n", out_name);
+
     // (3) Parse reuse latency to bins
     let rl_list = rl::read_from_binary(out_name);
     println!("read rl done");

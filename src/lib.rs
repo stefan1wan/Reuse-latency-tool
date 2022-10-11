@@ -1,12 +1,16 @@
 
 pub mod rl{
     use std::fs::{File, read};
-    use std::io::prelude::*;
-    use std::io::{self, BufRead};
+    use std::io::{self, BufRead, prelude::*};
     use std::time::Instant;
     use std::path::Path;
+    use std::cmp::min;
+    use itertools::Itertools;
+    use std::convert::TryInto;
+    use std::collections::HashMap;
 
     const DEBUG:bool=false;
+
     fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
         let file = File::open(filename)?;
@@ -71,11 +75,11 @@ pub mod rl{
         }
     }
 
-    const MAX_WORKING_SET:u64 = 30000000;
-    use std::cmp::min;
-    use itertools::Itertools;
+    
+
     pub fn rl(pc_list: &Vec<u64>) -> Vec<u64>{
         // println!("PC list:\n{:#?}", pc_list);
+        const MAX_WORKING_SET:u64 = 30000000;
         let mut rl_list: Vec<u64> = vec![];
 
         let mut my_count:u64 = 0;
@@ -110,7 +114,6 @@ pub mod rl{
     }
 
 
-    use std::collections::HashMap;
     fn rl_uniq_map(i:usize, j:usize, pc_list:&Vec<u64>) -> HashMap<u64, u64>{
         let mut map = HashMap::new();
         for k in i..j{
@@ -120,12 +123,10 @@ pub mod rl{
         map
     }
 
-
-    use std::convert::TryInto;
     pub fn rl_improved(pc_list: &Vec<u64>) -> Vec<u64>{
         let mut rl_list: Vec<u64> = vec![0xffffffffffffffff; pc_list.len()];
         println!("Generated rl vector");
-        let mut walk_map:HashMap<u64, u64>= HashMap::new(); 
+        let mut walk_map:HashMap<u64, u64>= HashMap::with_capacity(pc_list.len()); // avoid frequently changing size
         // Map: <pc, pc_index>
 
         let mut index:usize = 0;
@@ -139,8 +140,6 @@ pub mod rl{
         for pc in pc_list{
             if walk_map.contains_key(&pc){
                 if just_hit{
-                    assert!(last_pc!=0);
-                    assert!(abs_latency!=0);
                     if DEBUG{
                         println!("index: {} abs_latency: {}, last_reuse_latency: {}, pc_list[index - abs_latency]: {}", index, abs_latency, last_resue_latency, pc_list[index - abs_latency]);
                     }
@@ -154,10 +153,11 @@ pub mod rl{
 
                         // To matain the state of uniq_map;
                         let last_pc_count = uniq_map.entry(last_pc).or_insert(0);
-                        *last_pc_count += 1; // no need to remove this; 
-                        // uniq_map.remove_entry(pc);
+                        *last_pc_count += 1;
+
                         let pc_count = uniq_map.entry(*pc).or_insert(0);
                         *pc_count -= 1;
+
                         if *pc_count==0 {
                             uniq_map.remove_entry(pc);
                         }
@@ -166,10 +166,13 @@ pub mod rl{
                         // abs_latency, last_resue_latency unchanged
                     }else{
                         just_hit = false;
-                        uniq_map = HashMap::new();
-                        abs_latency = 0;
-                        last_resue_latency = 0;
-                        last_pc = 0;
+                        if DEBUG{
+                            uniq_map = HashMap::new();
+                            abs_latency = 0;
+                            last_resue_latency = 0;
+                            last_pc = 0;
+                        }
+
                     }
                 }
                 
@@ -179,23 +182,23 @@ pub mod rl{
                     let last_index:usize = walk_map[pc].try_into().unwrap();
                     uniq_map = rl_uniq_map(last_index+1, index, pc_list);
                     
-                    rl_list[last_index] = uniq_map.len().try_into().unwrap();
+                    let reuse_latency = uniq_map.len();
+                    rl_list[last_index] =  reuse_latency.try_into().unwrap();
                     abs_latency = index - last_index;
-                    last_resue_latency = uniq_map.len();
+                    last_resue_latency =  reuse_latency;
                     last_pc = *pc;
                 }
             }else{
-                if DEBUG{ println!("Not found!!!!!\n");}
+                if DEBUG{ println!("Not found\n");}
                 just_hit = false;
             }
 
             walk_map.insert(*pc, index.try_into().unwrap()); // insert pc;
             
-            // println!("{}", pc);
             index += 1;
             if index%100000==0 {
                 let percentage:f64 = 100.0 * (index as f64) / (pc_list.len() as f64);
-                println!("count: {}, total: {}. ({} %) {} ms", index, pc_list.len(), percentage, t0.elapsed().as_millis());
+                println!("count: {}, total: {}. ({}%) {} ms", index, pc_list.len(), percentage, t0.elapsed().as_millis());
             }
         }
         rl_list
