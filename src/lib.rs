@@ -6,7 +6,7 @@ pub mod rl{
     use std::time::Instant;
     use std::path::Path;
 
-    const DEBUG:bool=false;
+    const DEBUG:bool=true;
     fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
         let file = File::open(filename)?;
@@ -48,7 +48,7 @@ pub mod rl{
     // }
 
     pub fn read_from_binary(filename: &str) -> Vec<u64>{
-        println!("In binary file {}", filename);
+        println!("Read from binary file {}", filename);
 
         let contents = read(filename)
             .expect("Something went wrong reading the file");
@@ -70,23 +70,15 @@ pub mod rl{
 
 
     pub fn write_to_binary(pc_list:&Vec<u64>, filename: &str){
+        println!("Write to binary file {}", filename);
         let mut file = File::create(filename).unwrap();
         for pc in pc_list{
             file.write(&pc.to_le_bytes()).ok(); // *pc, 8);
         }
     }
 
-    use std::collections::HashSet;
-    fn rl_uniq(i:usize, j:usize, pc_list:&Vec<u64>) -> u64{
-        let mut map = HashSet::new();
-        for k in i..j{
-            map.insert(pc_list[k]);
-        }
-        map.len().try_into().unwrap()
-    }
-
     const MAX_WORKING_SET:u64 = 30000000;
-    use std::cmp::{max, min};
+    use std::cmp::min;
     use itertools::Itertools;
     pub fn rl(pc_list: &Vec<u64>) -> Vec<u64>{
         // println!("PC list:\n{:#?}", pc_list);
@@ -151,40 +143,57 @@ pub mod rl{
 
         let t0 = Instant::now();
         for pc in pc_list{
-            // println!("{}", pc);
+            println!("{}", pc);
             if walk_map.contains_key(&pc){
                 if just_hit{
-                    if pc_list[index - abs_latency] == *pc && uniq_map.contains_key(pc) && uniq_map[pc]==1{
-                        // println!("Hit cache");
+                    assert!(last_pc!=0);
+                    assert!(abs_latency!=0);
+                    if DEBUG{
+                        println!("index: {} abs_latency: {}, last_reuse_latency: {}, pc_list[index - abs_latency]: {}", index, abs_latency, last_resue_latency, pc_list[index - abs_latency]);
+                    }
+                    
+                    if pc_list[index - abs_latency] == *pc && uniq_map.contains_key(pc){
+                        if DEBUG{ println!("Hit cache");}
+                        
+
                         let last_index:usize = walk_map[pc].try_into().unwrap();
                         rl_list[last_index] = last_resue_latency.try_into().unwrap();
 
                         // To matain the state of uniq_map;
                         let last_pc_count = uniq_map.entry(last_pc).or_insert(0);
-                        *last_pc_count += 1;
+                        *last_pc_count += 1; // no need to remove this; 
+                        // uniq_map.remove_entry(pc);
                         let pc_count = uniq_map.entry(*pc).or_insert(0);
                         *pc_count -= 1;
+                        if *pc_count==0 {
+                            uniq_map.remove_entry(pc);
+                        }
 
                         last_pc = *pc;
                         // abs_latency, last_resue_latency unchanged
                     }else{
                         just_hit = false;
+                        uniq_map = HashMap::new();
+                        abs_latency = 0;
+                        last_resue_latency = 0;
+                        last_pc = 0;
                     }
                 }
                 
                 if !just_hit{
-                    // println!("Not Hit cache");
+                    if DEBUG{  println!("Not Hit cache"); } 
                     just_hit = true;
                     let last_index:usize = walk_map[pc].try_into().unwrap();
                     uniq_map = rl_uniq_map(last_index+1, index, pc_list);
                     
                     rl_list[last_index] = uniq_map.len().try_into().unwrap();
                     abs_latency = index - last_index;
-                    last_resue_latency = rl_list[index].try_into().unwrap();
+                    last_resue_latency = uniq_map.len();
                     last_pc = *pc;
                 }
             }else{
-                //println!("Not found!!!!!\n")
+                if DEBUG{ println!("Not found!!!!!\n");}
+                just_hit = false;
             }
 
             walk_map.insert(*pc, index.try_into().unwrap()); // insert pc;
@@ -212,4 +221,33 @@ pub mod rl{
         }
     }
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_for_rl() {
+        let result = rl::rl_improved(&vec![1, 2, 3, 4, 1, 1, 2, 3, 5, 1, 1]);
+        let ground_truth:Vec<u64> = vec![3, 3, 3, 0xffffffffffffffff,0, 3, 0xffffffffffffffff,0xffffffffffffffff,0xffffffffffffffff,0 , 0xffffffffffffffff];
+        println!("{:?}", result);
+        println!("{:?}", ground_truth);
+
+        for i in 0..result.len(){
+            assert!(result[i]==ground_truth[i]);
+        }
+    }
+
+    #[test]
+    fn test_for_rl_2() {
+        let result = rl::rl_improved(&vec![1, 2, 3, 4, 1, 1, 2, 3, 5, 1, 1, 3, 3]);
+        let ground_truth:Vec<u64> = vec![3, 3, 3, 0xffffffffffffffff,0, 3, 0xffffffffffffffff, 2,0xffffffffffffffff,0 , 0xffffffffffffffff, 0, 0xffffffffffffffff];
+        println!("{:?}", result);
+        println!("{:?}", ground_truth);
+
+        for i in 0..result.len(){
+            assert!(result[i]==ground_truth[i]);
+        }
+    }
 }
