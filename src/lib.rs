@@ -6,7 +6,7 @@ pub mod rl{
     use std::time::Instant;
     use std::path::Path;
 
-    const DEBUG:bool=true;
+    const DEBUG:bool=false;
     fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     where P: AsRef<Path>, {
         let file = File::open(filename)?;
@@ -14,7 +14,7 @@ pub mod rl{
         Ok(io::BufReader::new(file).lines())
     }
 
-    pub fn read_file_text(filename: &str) -> Vec<u64>{
+    pub fn parse_txt_file(filename: &str) -> Vec<u64>{
         println!("In txt file {}", filename);
         let mut pid_list: Vec<u32> = vec![];
         let mut pc_list: Vec<u64> = vec![];
@@ -40,12 +40,6 @@ pub mod rl{
         }
         pc_list
     }
-
-    // pub fn read_file_text_multi_thread(filename: &str, core_num:i32) -> Vec<u64>{
-    //     let mut pc_list: Vec<u64> = vec![];
-    //     //TODO: implement according to cores;
-    //     pc_list
-    // }
 
     pub fn read_from_binary(filename: &str) -> Vec<u64>{
         println!("Read from binary file {}", filename);
@@ -143,7 +137,6 @@ pub mod rl{
 
         let t0 = Instant::now();
         for pc in pc_list{
-            println!("{}", pc);
             if walk_map.contains_key(&pc){
                 if just_hit{
                     assert!(last_pc!=0);
@@ -208,7 +201,7 @@ pub mod rl{
         rl_list
     }
 
-    pub fn rl_bins(rl_list: &Vec<u64>, filename: &str){
+    pub fn rl_bins_for_pdf(rl_list: &Vec<u64>, filename: &str){
         let mut map:HashMap<u64, u64> = HashMap::new();
         for i in 0..rl_list.len(){
             let count = map.entry(rl_list[i]).or_insert(0);
@@ -221,33 +214,4 @@ pub mod rl{
         }
     }
 
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_for_rl() {
-        let result = rl::rl_improved(&vec![1, 2, 3, 4, 1, 1, 2, 3, 5, 1, 1]);
-        let ground_truth:Vec<u64> = vec![3, 3, 3, 0xffffffffffffffff,0, 3, 0xffffffffffffffff,0xffffffffffffffff,0xffffffffffffffff,0 , 0xffffffffffffffff];
-        println!("{:?}", result);
-        println!("{:?}", ground_truth);
-
-        for i in 0..result.len(){
-            assert!(result[i]==ground_truth[i]);
-        }
-    }
-
-    #[test]
-    fn test_for_rl_2() {
-        let result = rl::rl_improved(&vec![1, 2, 3, 4, 1, 1, 2, 3, 5, 1, 1, 3, 3]);
-        let ground_truth:Vec<u64> = vec![3, 3, 3, 0xffffffffffffffff,0, 3, 0xffffffffffffffff, 2,0xffffffffffffffff,0 , 0xffffffffffffffff, 0, 0xffffffffffffffff];
-        println!("{:?}", result);
-        println!("{:?}", ground_truth);
-
-        for i in 0..result.len(){
-            assert!(result[i]==ground_truth[i]);
-        }
-    }
 }

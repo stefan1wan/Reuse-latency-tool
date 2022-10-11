@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import struct
-
+import matplotlib.pyplot as plt
 
 # Read data to dic
 dic = {}
@@ -18,7 +18,8 @@ with open("bins.data", "rb") as f:
 
 print(dic)
 
-# Draw pdf (it may have problem of overflow!å)
+# ===============
+# Draw pdf
 total = 0
 for k, count in dic.items():
     total += count
@@ -46,18 +47,14 @@ for k, p in dic_pdf.items():
 print(dic_pdf_bins)
 
 
-import matplotlib.pyplot as plt
-# pic
-
 lists = sorted(dic_pdf_bins.items()) # sorted by key, return a list of tuples
-
 x, y = zip(*lists) # unpack a list of pairs into two tuples
 plt.plot(x[:-1], y[:-1])
 plt.scatter(x[:-1], y[:-1], color="g")
 plt.xlabel("each %d instructions. unused: %lf"%(bins_len, y[-1]))
 plt.show()
 
-
+# ===============
 ### cdf 
 y_ = [0] * len(x)
 y_[0] = y[0]
