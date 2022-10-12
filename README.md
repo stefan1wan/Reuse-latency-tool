@@ -10,22 +10,36 @@ The resue latency is useful to analyze instruction working sets later.
 ### Naive
 We use two `for` loops to do this work:
 ```python
-S = [1,2,3,4,1,1,2,3,5]
+PC = [1,2,3,4,1,1,2,3,5]
 RL = []
 L = len(PC)
 
 for i in range(L):
     for j in range(i+1, L):
-        if S[i]!=S[j]:
+        if PC[i]!=PC[j]:
             continue
-        RL.append(RL_uniq(i, j));
+        RL.append(RL_uniqe(i, j))
 
 print(RL)
 ```
 
 ### Optimization
-Use a hashmap to record all the PCs and its indexes. Then we just need to traverse the log once. We will also maintain some states to speedup RL calculation for basic bolcks. For details please see the code.
+Use a hashmap to record all the PCs and its indexes. Then we just need to traverse the log once. We will also maintain some states to speedup RL calculation for basic bolcks. For details please see the code. 
+```python
+PC = [1,2,3,4,1,1,2,3,5]
+RL = [0xffff]*len(PC)
+L = len(PC)
+hashmap = {}
 
+for i in range(L):
+    pc = PC[i]
+    if pc in hashmap.keys():
+        last_i = hashmap[pc]
+        RL[last_i] = RL_uniqe(last_i + 1, i)
+
+    hashmap[PC[i]] = i
+print(RL) # 0xffff in RL means that pc is not reused
+```
 
 ## File format
 
