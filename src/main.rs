@@ -18,10 +18,10 @@ fn main() {
     let bins_name = "bins.data";
 
     // (1) Parse and generate binary
-    let pc_list = rl::parse_txt_file(txt_name);
-    println!("parse {} done\n", txt_name);
-    rl::write_to_binary(&pc_list, bin_name);
-    println!("generate {} done.\n", bin_name);
+    // let pc_list = rl::parse_txt_file(txt_name);
+    // println!("parse {} done\n", txt_name);
+    // rl::write_to_binary(&pc_list, bin_name);
+    // println!("generate {} done.\n", bin_name);
 
     // (2) Read binary and calculate 
     let pc_list = rl::read_from_binary(bin_name);
@@ -34,6 +34,6 @@ fn main() {
     let rl_list = rl::read_from_binary(out_name);
     println!("read rl done");
     rl::rl_bins_for_pdf(&rl_list, bins_name);
-    println!("generate {} done.\n", bin_name);
+    println!("generate {} done.\n", bins_name);
 }
 

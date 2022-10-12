@@ -196,9 +196,9 @@ pub mod rl{
             walk_map.insert(*pc, index.try_into().unwrap()); // insert pc;
             
             index += 1;
-            if index%100000==0 {
+            if index%1000000==0 {
                 let percentage:f64 = 100.0 * (index as f64) / (pc_list.len() as f64);
-                println!("count: {}, total: {}. ({}%) {} ms", index, pc_list.len(), percentage, t0.elapsed().as_millis());
+                println!("count: {}, total: {}. ({:.1}%) {} ms", index, pc_list.len(), percentage, t0.elapsed().as_millis());
             }
         }
         rl_list
