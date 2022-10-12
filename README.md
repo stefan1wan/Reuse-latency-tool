@@ -1,9 +1,9 @@
 # Intro
-This is a tool in rust to analyze the reuse latency(RL) of a set of PCs.
-Let's assume that sequence is `a,b,c,d,a,a,b,c,e.......`
-For the first a, there is b,c,d between the next appearence. so the reuse latency is `unique([b,c,d]) = 3`. We don't count the repetitive PCs. We denote it as `RL[0] = (a, 3)`.
-Similairy,  `RL[1]=(b, 3), RL[2]=(c, 3), RL[3] = (d, ∞), RL[4] = (a, 0)` and so on. For `d`, there is no resusage, so we use ∞ to represent it.
-The resue latency is useful to analyze instruction working sets later.
+The reuse distance is the uniqe PC counts between two appearence of one same PC.
+
+Assume a PC sequence `a,b,c,c, d, a, a,b,c,e.......`.
+Between the first `a` and the second `a`,  there is b, c, c, d. So the reuse distance of the first `a` is  `unique([b,c,c,d]) = 3`. 
+Reuse latency is also used to refer to reuse distance in our repo.
 
 ## Algorithm
 
