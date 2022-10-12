@@ -18,6 +18,36 @@ pub mod rl{
         Ok(io::BufReader::new(file).lines())
     }
 
+    pub fn parse_txt_file_as_cacheline(filename: &str) -> Vec<u64>{
+        println!("In txt file {}", filename);
+        let mut pc_list: Vec<u64> = vec![];
+
+        let mut my_count:u64 = 0;
+        if let Ok(lines) = read_lines(filename){
+            for line in lines {
+                if let Ok(info) = line {
+                    // println!("{}", info);
+                    let split: Vec<_> = info.split_whitespace().collect();
+
+                    let pc: u64 = u64::from_str_radix(split[1], 16).unwrap()<<6;
+                    
+                    if pc_list.len() >0 && pc_list[pc_list.len()-1]!=pc{
+                        pc_list.push(pc);
+                    }
+                    if pc_list.len()==0{
+                        pc_list.push(pc);
+                    }   
+
+                }
+                my_count=my_count+1;
+                if my_count%10000000==0{
+                    println!("count: {}", my_count);
+                }
+            }  
+        }
+        pc_list
+    }
+
     pub fn parse_txt_file(filename: &str) -> Vec<u64>{
         println!("In txt file {}", filename);
         let mut pid_list: Vec<u32> = vec![];
