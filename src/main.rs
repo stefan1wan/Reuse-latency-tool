@@ -21,17 +21,11 @@ fn main() {
         io_funcs::write_to_binary(&pc_list, pc_data_name);
         println!("generate {} done.\n", pc_data_name);
     }else{
+        // TODO: to set the limits
         let pc_list = io_funcs::parse_txt_file_stdin();
         io_funcs::write_to_binary(&pc_list, pc_data_name);
         println!("generate {} done.\n", pc_data_name);
     }
-    
-    
-
-
-   
-    
-    
 
     // (2) Read binary and calculate 
     let pc_list = io_funcs::read_from_binary(pc_data_name);

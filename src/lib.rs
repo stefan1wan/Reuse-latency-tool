@@ -9,9 +9,7 @@ pub mod rl{
     use std::collections::HashMap;
 
     const DEBUG:bool=false;
-
-    
-    
+ 
     pub fn rl(pc_list: &Vec<u64>) -> Vec<u64>{
         // println!("PC list:\n{:#?}", pc_list);
         const MAX_WORKING_SET:u64 = 30000000;
@@ -136,6 +134,52 @@ pub mod rl{
                 println!("count: {}, total: {}. ({:.1}%) {} ms", index, pc_list.len(), percentage, t0.elapsed().as_millis());
             }
         }
+        rl_list
+    }
+
+
+    fn rl_bytes_map(i:usize, j:usize, pc_list:&Vec<u64>, pc_len_list: &Vec<u16>) -> u64{
+        let mut map:HashMap<u64, u16> = HashMap::new();
+        for k in i..j{
+            let count = map.entry(pc_list[k]).or_insert(0);
+            *count += pc_len_list[k];
+        }
+        map.len().try_into().unwrap()
+    }
+
+    pub fn rl_by_bytes(pc_list: &Vec<u64>, pc_len_list: &Vec<u16>) -> Vec<u64>{
+        // TODO: need also parse the length of each instructions;
+        // println!("PC list:\n{:#?}", pc_list);
+        let mut rl_list: Vec<u64> = vec![];
+
+        let mut my_count:u64 = 0;
+        for i in 0..pc_list.len(){
+            let mut flag:bool = false;
+            for j in i+1..pc_list.len(){
+                if pc_list[i] == pc_list[j]{
+                    // println!("{}:{}", i, j);
+                    let reuse_distance:u64 = rl_bytes_map(i+1, j, &pc_list, &pc_len_list); //pc_list[i+1..j].iter().cloned().unique().collect_vec().len().try_into().unwrap();//
+                    rl_list.push(reuse_distance);
+                    flag=true;
+                    if DEBUG{
+                        println!("Resuse latency found: {}", reuse_distance);
+                    }
+                    
+                    break;
+                }
+            }
+            if !flag{
+                rl_list.push((pc_list.len()*100).try_into().unwrap());
+                if DEBUG{
+                    println!("Resuse latency not found!");
+                }
+            }
+            my_count=my_count+1;
+            if my_count%100000==0 {
+                println!("count: {}", my_count);
+            }
+        }
+        // println!("Reuse Distance list:\n{:#?}", rl_list);
         rl_list
     }
 

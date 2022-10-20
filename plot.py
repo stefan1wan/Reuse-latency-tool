@@ -4,9 +4,10 @@ from turtle import right
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 
+bins_data = "bins.data"
 # Read data to a dic
 dic = {}
-with open("bins.data", "rb") as f:
+with open(bins_data, "rb") as f:
     while True:
         rl = f.read(8)
         if not rl:
