@@ -6,7 +6,7 @@ from matplotlib.pyplot import MultipleLocator
 
 # bins_data = "bins.data"
 
-bins_data = "./data_bins/web_serving_web_server_bins.data"
+bins_data = "./data_bins/web_search_branch_bins.data"
 # Read data to a dic
 dic = {}
 with open(bins_data, "rb") as f:

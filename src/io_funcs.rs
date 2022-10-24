@@ -40,6 +40,65 @@ pub mod io_funcs{
         pc_list
     }
 
+    pub fn parse_txt_file_for_branches(filename: &str) -> Vec<u64>{
+        println!("In txt file {}", filename);
+        let mut pid_list: Vec<u32> = vec![];
+        let mut brach_pc_list: Vec<u64> = vec![];
+
+        let mut my_count:u64 = 0;
+        if let Ok(lines) = read_lines(filename){
+            for line in lines {
+                if let Ok(info) = line {
+                    // println!("{}", info);
+                    let split: Vec<_> = info.split_whitespace().collect();
+                    
+                    let pid: u32 = split[0].parse().unwrap();
+                    if split.len() < 4 {
+                        continue;
+                    }
+                    let pc: u64 = u64::from_str_radix(split[1], 16).unwrap();
+                    let opcode: u8 = u8::from_str_radix(split[3], 16).unwrap();
+                    // println!("opcode:{:#02x?}", opcode);
+                    /*
+                    * 0x7X: jcc
+                    * 0xe8: call
+                    * 0xff: call off
+                    * 0x67: call xxx
+                    * 0xeb: jmp
+                    * 0xf2: jmp off
+                    * 0xe9: jmp off
+                    * 0x3e: jum what?
+                    * 0xc3: return
+                    * 0x0f: jcc off
+                    * 0x0f 0x05: syscall
+                    */
+                    // https://www.amd.com/system/files/TechDocs/24594.pdf
+                    if opcode&0xf0 == 0x70 || 
+                        opcode == 0xe8 || 
+                        opcode == 0xeb || 
+                        opcode == 0xe3 || 
+                        opcode==0xe9 || 
+                        opcode==0xea || 
+                        opcode == 0xc3 || 
+                        opcode == 0x0f || 
+                        opcode==0xff|| 
+                        opcode==0xf2||
+                        opcode==0x9a||
+                        opcode==0x3e||
+                        opcode==0x67 {
+                        brach_pc_list.push(pc);
+                    }
+                    pid_list.push(pid);
+                }
+                my_count=my_count+1;
+                if my_count%10000000==0{
+                    println!("count: {}", my_count);
+                }
+            }  
+        }
+        brach_pc_list
+    }
+
     pub fn parse_txt_file_stdin() -> Vec<u64>{
         let mut pid_list: Vec<u32> = vec![];
         let mut pc_list: Vec<u64> = vec![];
